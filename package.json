@@ -1,0 +1,8 @@
+{
+  "name": "eventgenie-ai",
+  "version": "1.0.0",
+  "description": "EventGenie - AI Event Planning Assistant",
+  "scripts": {
+    "start": "serve . -l 3000"
+  }
+}

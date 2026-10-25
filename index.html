@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="EventGenie — AI-powered event planning assistant for weddings, birthdays, and community events. Smart budgets, timelines, vendor checklists, and personalized ideas.">
+  <title>EventGenie — AI Event Planning Assistant</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- ========== NAVBAR ========== -->
+    <nav class="navbar" id="navbar">
+      <div class="navbar-brand" onclick="goHome()">
+        <div class="logo-icon">✨</div>
+        <h1>Event<span class="gradient-text">Genie</span></h1>
+      </div>
+      <div class="nav-links" id="navLinks">
+        <!-- Dynamically populated -->
+      </div>
+    </nav>
+
+    <!-- ========== HERO / LANDING ========== -->
+    <section class="hero-section" id="heroSection">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        Powered by GenAI
+      </div>
+      <h2 class="hero-title">
+        Plan your perfect<br><span class="gradient-text">event effortlessly</span>
+      </h2>
+      <p class="hero-subtitle">
+        From dream weddings to unforgettable birthdays and impactful community events — let AI handle the planning so you can focus on the celebration.
+      </p>
+      <div class="event-type-grid">
+        <div class="event-card" data-type="wedding" onclick="selectEventType('wedding')">
+          <div class="card-icon">💒</div>
+          <h3>Wedding</h3>
+          <p>Plan your dream wedding with AI-curated themes, vendor lists, seating, and timeline management.</p>
+          <div class="card-arrow">→</div>
+        </div>
+        <div class="event-card" data-type="birthday" onclick="selectEventType('birthday')">
+          <div class="card-icon">🎂</div>
+          <h3>Birthday Party</h3>
+          <p>Create magical birthday celebrations with personalized themes, activities, and budget tracking.</p>
+          <div class="card-arrow">→</div>
+        </div>
+        <div class="event-card" data-type="community" onclick="selectEventType('community')">
+          <div class="card-icon">🎪</div>
+          <h3>Community Event</h3>
+          <p>Organize impactful community gatherings with logistics, volunteer coordination, and outreach plans.</p>
+          <div class="card-arrow">→</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SETUP FORM ========== -->
+    <section class="setup-section" id="setupSection">
+      <div class="setup-header">
+        <div class="setup-icon" id="setupIcon">💒</div>
+        <h2 id="setupTitle">Plan Your Wedding</h2>
+        <p id="setupSubtitle">Tell us about your event so we can personalize everything for you.</p>
+      </div>
+      <div class="glass-panel">
+        <form id="setupForm" onsubmit="submitSetup(event)">
+          <div class="form-group">
+            <label class="form-label" for="eventName">Event Name</label>
+            <input class="form-input" id="eventName" type="text" placeholder="e.g. Mark & Veronica's Wedding" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="eventDate">Event Date</label>
+            <input class="form-input" id="eventDate" type="date" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="guestCount">Expected Guests</label>
+            <input class="form-input" id="guestCount" type="number" placeholder="e.g. 150" min="1" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="totalBudget">Total Budget ($)</label>
+            <input class="form-input" id="totalBudget" type="number" placeholder="e.g. 25000" min="100" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="eventLocation">Location / City</label>
+            <input class="form-input" id="eventLocation" type="text" placeholder="e.g. San Francisco, CA">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="eventTheme">Theme / Vibe (optional)</label>
+            <input class="form-input" id="eventTheme" type="text" placeholder="e.g. Rustic garden, Neon party, Charity gala">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="specialNotes">Special Notes</label>
+            <textarea class="form-textarea" id="specialNotes" placeholder="Any special requirements, dietary needs, accessibility, etc."></textarea>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:8px;">
+            <button type="button" class="btn btn-ghost" onclick="goHome()">← Back</button>
+            <button type="submit" class="btn btn-primary" style="flex:1;">Generate My Plan ✨</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ========== DASHBOARD ========== -->
+    <section class="dashboard-section" id="dashboardSection">
+      <!-- Dashboard Header -->
+      <div class="dash-header">
+        <div>
+          <div class="event-label" id="dashEventLabel">
+            <span id="dashEventIcon">💒</span>
+            <span id="dashEventType">Wedding</span>
+          </div>
+          <h2 id="dashEventName">Event Dashboard</h2>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn btn-ghost btn-sm" onclick="exportPlan()">📥 Export</button>
+          <button class="btn btn-danger btn-sm" onclick="resetPlan()">Reset</button>
+        </div>
+      </div>
+
+      <!-- Countdown -->
+      <div class="countdown-bar" id="countdownBar">
+        <div class="countdown-item">
+          <div class="cd-value" id="cdDays">--</div>
+          <div class="cd-label">Days</div>
+        </div>
+        <div class="countdown-item">
+          <div class="cd-value" id="cdHours">--</div>
+          <div class="cd-label">Hours</div>
+        </div>
+        <div class="countdown-item">
+          <div class="cd-value" id="cdMins">--</div>
+          <div class="cd-label">Minutes</div>
+        </div>
+        <div class="countdown-item">
+          <div class="cd-value" id="cdSecs">--</div>
+          <div class="cd-label">Seconds</div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" id="statsGrid">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="tab-nav" id="tabNav">
+        <button class="tab-btn active" data-tab="budget" onclick="switchTab('budget')">💰 Budget</button>
+        <button class="tab-btn" data-tab="timeline" onclick="switchTab('timeline')">📅 Timeline</button>
+        <button class="tab-btn" data-tab="vendors" onclick="switchTab('vendors')">🏪 Vendors</button>
+        <button class="tab-btn" data-tab="ai" onclick="switchTab('ai')">🤖 AI Ideas</button>
+      </div>
+
+      <!-- Tab: Budget -->
+      <div class="tab-content active" id="tab-budget">
+        <div class="budget-row">
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h3>💰 Budget Breakdown</h3>
+              <span class="badge badge-purple" id="budgetUsedBadge">0% used</span>
+            </div>
+            <div id="budgetBars">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h3>📊 Allocation</h3>
+            </div>
+            <div class="donut-container" style="margin-bottom:20px;">
+              <canvas id="budgetDonut" width="260" height="260"></canvas>
+              <div class="donut-label">
+                <span class="donut-value" id="donutValue">$0</span>
+                <span class="donut-text">Total Budget</span>
+              </div>
+            </div>
+            <div id="budgetLegend" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+            </div>
+          </div>
+        </div>
+        <div class="glass-panel">
+          <div class="panel-header">
+            <h3>📋 Expense Items</h3>
+            <button class="btn btn-primary btn-sm" onclick="openAddBudgetItem()">+ Add Item</button>
+          </div>
+          <ul class="budget-items-list" id="budgetItemsList">
+            <!-- Populated dynamically -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- Tab: Timeline -->
+      <div class="tab-content" id="tab-timeline">
+        <div class="glass-panel">
+          <div class="panel-header">
+            <h3>📅 Planning Timeline</h3>
+            <span class="badge badge-green" id="timelineProgress">0 / 0 done</span>
+          </div>
+          <div class="timeline" id="timelineList">
+            <!-- Populated dynamically -->
+          </div>
+          <button class="add-item-btn" onclick="openAddTimelineItem()">+ Add Milestone</button>
+        </div>
+      </div>
+
+      <!-- Tab: Vendors -->
+      <div class="tab-content" id="tab-vendors">
+        <div class="glass-panel">
+          <div class="panel-header">
+            <h3>🏪 Vendor Checklist</h3>
+            <span class="badge badge-orange" id="vendorProgress">0 / 0 booked</span>
+          </div>
+          <div class="vendor-grid" id="vendorGrid">
+            <!-- Populated dynamically -->
+          </div>
+          <button class="add-item-btn" style="margin-top:16px;" onclick="openAddVendor()">+ Add Vendor</button>
+        </div>
+      </div>
+
+      <!-- Tab: AI Ideas -->
+      <div class="tab-content" id="tab-ai">
+        <div class="ai-container">
+          <div class="glass-panel ai-chat-panel">
+            <div class="panel-header">
+              <h3>🤖 AI Planning Assistant</h3>
+              <span class="badge badge-purple">GenAI</span>
+            </div>
+            <div class="ai-messages" id="aiMessages">
+              <!-- Populated dynamically -->
+            </div>
+            <div class="ai-input-row">
+              <input class="ai-input" id="aiInput" type="text" placeholder="Ask for ideas, themes, tips..." onkeydown="if(event.key==='Enter')sendAiMessage()">
+              <button class="ai-send-btn" onclick="sendAiMessage()">➤</button>
+            </div>
+          </div>
+          <div class="glass-panel" style="max-height:568px;overflow-y:auto;">
+            <div class="panel-header">
+              <h3>💡 Personalized Ideas</h3>
+              <button class="btn btn-ghost btn-sm" onclick="generateIdeas()">↻ Refresh</button>
+            </div>
+            <div class="ideas-grid" id="ideasGrid">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========== MODAL ========== -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+      <div class="modal" id="modal" onclick="event.stopPropagation()">
+        <div class="modal-title" id="modalTitle">
+          <span>Add Item</span>
+          <button class="modal-close" onclick="closeModalDirect()">✕</button>
+        </div>
+        <div id="modalBody">
+          <!-- Dynamic -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
