@@ -144,15 +144,15 @@
       </div>
 
       <!-- Tab Navigation -->
-      <div class="tab-nav" id="tabNav">
-        <button class="tab-btn active" data-tab="budget" onclick="switchTab('budget')">💰 Budget</button>
-        <button class="tab-btn" data-tab="timeline" onclick="switchTab('timeline')">📅 Timeline</button>
-        <button class="tab-btn" data-tab="vendors" onclick="switchTab('vendors')">🏪 Vendors</button>
-        <button class="tab-btn" data-tab="ai" onclick="switchTab('ai')">🤖 AI Ideas</button>
+      <div class="tab-nav" id="tabNav" role="tablist" aria-label="Event Management Sections">
+        <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-budget" data-tab="budget" onclick="switchTab('budget')">💰 Budget</button>
+        <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-timeline" data-tab="timeline" onclick="switchTab('timeline')">📅 Timeline</button>
+        <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-vendors" data-tab="vendors" onclick="switchTab('vendors')">🏪 Vendors</button>
+        <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-ai" data-tab="ai" onclick="switchTab('ai')">🤖 AI Ideas</button>
       </div>
 
       <!-- Tab: Budget -->
-      <div class="tab-content active" id="tab-budget">
+      <div class="tab-content active" id="tab-budget" role="tabpanel">
         <div class="budget-row">
           <div class="glass-panel">
             <div class="panel-header">
@@ -190,7 +190,7 @@
       </div>
 
       <!-- Tab: Timeline -->
-      <div class="tab-content" id="tab-timeline">
+      <div class="tab-content" id="tab-timeline" role="tabpanel">
         <div class="glass-panel">
           <div class="panel-header">
             <h3>📅 Planning Timeline</h3>
@@ -204,7 +204,7 @@
       </div>
 
       <!-- Tab: Vendors -->
-      <div class="tab-content" id="tab-vendors">
+      <div class="tab-content" id="tab-vendors" role="tabpanel">
         <div class="glass-panel">
           <div class="panel-header">
             <h3>🏪 Vendor Checklist</h3>
@@ -218,7 +218,7 @@
       </div>
 
       <!-- Tab: AI Ideas -->
-      <div class="tab-content" id="tab-ai">
+      <div class="tab-content" id="tab-ai" role="tabpanel">
         <div class="ai-container">
           <div class="glass-panel ai-chat-panel">
             <div class="panel-header">
@@ -229,8 +229,8 @@
               <!-- Populated dynamically -->
             </div>
             <div class="ai-input-row">
-              <input class="ai-input" id="aiInput" type="text" placeholder="Ask for ideas, themes, tips..." onkeydown="if(event.key==='Enter')sendAiMessage()">
-              <button class="ai-send-btn" onclick="sendAiMessage()">➤</button>
+              <input class="ai-input" id="aiInput" type="text" placeholder="Ask for ideas, themes, tips..." onkeydown="if(event.key==='Enter')sendAiMessage()" aria-label="Ask AI Assistant">
+              <button class="ai-send-btn" onclick="sendAiMessage()" aria-label="Send message">➤</button>
             </div>
           </div>
           <div class="glass-panel" style="max-height:568px;overflow-y:auto;">
@@ -248,11 +248,11 @@
     </section>
 
     <!-- ========== MODAL ========== -->
-    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal" id="modal" onclick="event.stopPropagation()">
         <div class="modal-title" id="modalTitle">
           <span>Add Item</span>
-          <button class="modal-close" onclick="closeModalDirect()">✕</button>
+          <button class="modal-close" onclick="closeModalDirect()" aria-label="Close dialog">✕</button>
         </div>
         <div id="modalBody">
           <!-- Dynamic -->

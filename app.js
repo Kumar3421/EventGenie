@@ -20,16 +20,27 @@ let appState = {
 
 // Persist state
 function saveState() {
-  localStorage.setItem('eventgenie_state', JSON.stringify(appState));
+  try {
+    localStorage.setItem('eventgenie_state', JSON.stringify(appState));
+  } catch (err) {
+    console.error('Failed to save state to localStorage:', err);
+  }
 }
 
 function loadState() {
-  const saved = localStorage.getItem('eventgenie_state');
-  if (saved) {
-    appState = JSON.parse(saved);
-    if (appState.currentView === 'dashboard' && appState.eventData) {
-      showDashboard();
+  try {
+    const saved = localStorage.getItem('eventgenie_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === 'object') {
+        appState = parsed;
+        if (appState.currentView === 'dashboard' && appState.eventData) {
+          showDashboard();
+        }
+      }
     }
+  } catch (err) {
+    console.error('Failed to parse saved state from localStorage:', err);
   }
 }
 
@@ -158,11 +169,21 @@ function updateNavLinks() {
 // ===== TABS =====
 function switchTab(tabId) {
   document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(tb => tb.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(tb => {
+    tb.classList.remove('active');
+    tb.setAttribute('aria-selected', 'false');
+  });
   document.querySelectorAll('.nav-link').forEach(nl => nl.classList.remove('active'));
 
-  document.getElementById('tab-' + tabId).classList.add('active');
-  document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+  const activeContent = document.getElementById('tab-' + tabId);
+  if (activeContent) activeContent.classList.add('active');
+
+  const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+  if (activeBtn) {
+    activeBtn.classList.add('active');
+    activeBtn.setAttribute('aria-selected', 'true');
+  }
+
   const navBtn = document.querySelector(`.nav-link[data-tab="${tabId}"]`);
   if (navBtn) navBtn.classList.add('active');
 }
@@ -299,7 +320,7 @@ function renderBudget() {
     return `
       <div class="budget-bar-container">
         <div class="budget-bar-label">
-          <span>${item.icon} ${item.name}</span>
+          <span>${escapeHtml(item.icon)} ${escapeHtml(item.name)}</span>
           <span>$${formatNum(item.amount)} (${itemPct}%)</span>
         </div>
         <div class="budget-bar">
@@ -317,7 +338,7 @@ function renderBudget() {
   legendEl.innerHTML = items.map(i => `
     <div style="display:flex;align-items:center;gap:6px;font-size:0.78rem;">
       <div style="width:10px;height:10px;border-radius:50%;background:${i.color};"></div>
-      <span style="color:var(--text-secondary);">${i.name}</span>
+      <span style="color:var(--text-secondary);">${escapeHtml(i.name)}</span>
     </div>
   `).join('');
 
@@ -326,13 +347,13 @@ function renderBudget() {
   listEl.innerHTML = items.map(item => `
     <li class="budget-item">
       <div class="budget-item-left">
-        <div class="budget-item-icon" style="background:${item.color}22;color:${item.color};">${item.icon}</div>
-        <span class="budget-item-name">${item.name}</span>
+        <div class="budget-item-icon" style="background:${item.color}22;color:${item.color};">${escapeHtml(item.icon)}</div>
+        <span class="budget-item-name">${escapeHtml(item.name)}</span>
       </div>
       <div style="display:flex;align-items:center;gap:12px;">
         <span class="budget-item-amount">$${formatNum(item.amount)}</span>
-        <button class="btn btn-ghost btn-sm" onclick="editBudgetItem('${item.id}')" title="Edit">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteBudgetItem('${item.id}')" title="Delete">🗑️</button>
+        <button class="btn btn-ghost btn-sm" onclick="editBudgetItem('${escapeHtml(item.id)}')" title="Edit" aria-label="Edit ${escapeHtml(item.name)}">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteBudgetItem('${escapeHtml(item.id)}')" title="Delete" aria-label="Delete ${escapeHtml(item.name)}">🗑️</button>
       </div>
     </li>
   `).join('');
@@ -512,10 +533,10 @@ function renderTimeline() {
   document.getElementById('timelineProgress').textContent = `${done} / ${sorted.length} done`;
 
   list.innerHTML = sorted.map(t => `
-    <div class="timeline-item ${t.completed ? 'completed' : ''}" onclick="toggleTimeline('${t.id}')">
+    <div class="timeline-item ${t.completed ? 'completed' : ''}" onclick="toggleTimeline('${escapeHtml(t.id)}')" tabindex="0" role="button" aria-pressed="${t.completed}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTimeline('${escapeHtml(t.id)}');}">
       <div class="timeline-date">${formatDate(t.date)}</div>
-      <div class="timeline-title">${t.title}</div>
-      <div class="timeline-desc">${t.desc}</div>
+      <div class="timeline-title">${escapeHtml(t.title)}</div>
+      <div class="timeline-desc">${escapeHtml(t.desc)}</div>
       <span class="timeline-status ${t.completed ? 'status-done' : new Date(t.date) < new Date() ? 'status-pending' : 'status-upcoming'}">
         ${t.completed ? '✓ Done' : new Date(t.date) < new Date() ? '⏳ Overdue' : '◷ Upcoming'}
       </span>
@@ -534,7 +555,7 @@ function toggleTimeline(id) {
 }
 
 function openAddTimelineItem() {
-  document.getElementById('modalTitle').innerHTML = '<span>📅 Add Milestone</span><button class="modal-close" onclick="closeModalDirect()">✕</button>';
+  document.getElementById('modalTitle').innerHTML = '<span>📅 Add Milestone</span><button class="modal-close" onclick="closeModalDirect()" aria-label="Close">✕</button>';
   document.getElementById('modalBody').innerHTML = `
     <div class="form-group">
       <label class="form-label">Title</label>
@@ -618,14 +639,14 @@ function renderVendors() {
   document.getElementById('vendorProgress').textContent = `${booked} / ${appState.vendors.length} booked`;
 
   grid.innerHTML = appState.vendors.map(v => `
-    <div class="vendor-card ${v.booked ? 'checked' : ''}" onclick="toggleVendor('${v.id}')">
+    <div class="vendor-card ${v.booked ? 'checked' : ''}" onclick="toggleVendor('${escapeHtml(v.id)}')" tabindex="0" role="button" aria-pressed="${v.booked}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleVendor('${escapeHtml(v.id)}');}">
       <div class="vendor-checkbox">${v.booked ? '✓' : ''}</div>
       <div class="vendor-info">
-        <div class="vendor-name">${v.name}</div>
-        <div class="vendor-category">${v.category}</div>
+        <div class="vendor-name">${escapeHtml(v.name)}</div>
+        <div class="vendor-category">${escapeHtml(v.category)}</div>
         <div style="display:flex;align-items:center;justify-content:space-between;">
-          <span class="vendor-cost">${v.cost}</span>
-          <span class="vendor-priority priority-${v.priority}">${v.priority}</span>
+          <span class="vendor-cost">${escapeHtml(v.cost)}</span>
+          <span class="vendor-priority priority-${v.priority}">${escapeHtml(v.priority)}</span>
         </div>
       </div>
     </div>
@@ -1040,26 +1061,43 @@ function resetPlan() {
 }
 
 // ===== UTILITIES =====
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
 }
 
 function capitalize(s) {
+  if (!s) return '';
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function formatNum(n) {
+  if (typeof n !== 'number' || isNaN(n)) return '0';
   return n.toLocaleString('en-US');
 }
 
 function formatDate(dateStr) {
+  if (!dateStr) return '';
   const d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d.getTime())) return dateStr;
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function formatMarkdown(text) {
-  // Simple markdown-to-HTML: bold, bullet points, line breaks
-  return text
+  if (!text) return '';
+  // Sanitize first to protect against script injection
+  const safe = escapeHtml(text);
+  // Transform safe markdown patterns
+  return safe
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/^• (.*)$/gm, '<span style="display:block;padding-left:16px;position:relative;">• $1</span>')
     .replace(/^(\d+)\. (.*)$/gm, '<span style="display:block;padding-left:16px;">$1. $2</span>')
@@ -1067,7 +1105,29 @@ function formatMarkdown(text) {
     .replace(/\n/g, '<br>');
 }
 
-// ===== INIT =====
-document.addEventListener('DOMContentLoaded', () => {
-  loadState();
-});
+// ===== ACCESSIBILITY & KEYBOARD =====
+if (typeof document !== 'undefined') {
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeModalDirect();
+    }
+  });
+
+  // ===== INIT =====
+  document.addEventListener('DOMContentLoaded', () => {
+    loadState();
+  });
+}
+
+// Export module for automated testing (Node.js environment)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    appState,
+    escapeHtml,
+    capitalize,
+    formatNum,
+    formatDate,
+    formatMarkdown,
+    uid
+  };
+}
